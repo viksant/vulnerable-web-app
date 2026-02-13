@@ -19,7 +19,7 @@ export default function Footer() {
           ))}
         </div>
         <p className="text-sm font-bold uppercase tracking-widest text-white">
-          VULNSHOP &copy; 2024 &mdash; DELIBERATELY VULNERABLE
+          VULNSHOP &copy; 2026 &mdash; DELIBERATELY VULNERABLE
         </p>
       </div>
     </footer>
