@@ -1,0 +1,15 @@
+VulnShop Seed Users — Quick Reference
+======================================
+
+Email                   Password            Role       Hash Type
+-----                   --------            ----       ---------
+admin@vulnshop.com      Admin2024Secure!    admin      bcrypt (pgcrypto)
+support@vulnshop.com    Support2024!        support    bcrypt (pgcrypto)
+seller@vulnshop.com     Seller2024!         seller     bcrypt (pgcrypto)
+user1@test.com          password123         customer   MD5 (VULN: weak hash)
+user2@test.com          qwerty              customer   MD5 (VULN: weak hash)
+
+Notes:
+- MD5 hashes are pre-computed (no salt) — trivially crackable via rainbow tables
+- bcrypt hashes are generated at DB init time via pgcrypto gen_salt('bf', 12)
+- User IDs are sequential: admin=1, support=2, seller=3, user1=4, user2=5
