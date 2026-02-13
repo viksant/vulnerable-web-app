@@ -45,7 +45,7 @@ export default function Register() {
         email: formData.email,
         password: formData.password,
       });
-      setToken(response.data.access_token);
+      setToken(response.data.token);
       navigate("/");
     } catch (err) {
       setError(extractApiError(err, "Registration failed"));

@@ -28,7 +28,7 @@ export default function Login() {
 
     try {
       const response = await apiClient.post("/auth/login", { email, password });
-      setToken(response.data.access_token);
+      setToken(response.data.token);
       navigate("/");
     } catch (err) {
       setError(extractApiError(err, "Login failed"));

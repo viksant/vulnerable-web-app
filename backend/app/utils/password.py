@@ -12,18 +12,6 @@ from passlib.context import CryptContext
 # Bcrypt context for all new password hashing
 _crypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Bcrypt only processes the first 72 bytes of input
-_BCRYPT_MAX_BYTES = 72
-
-
-def _truncate_for_bcrypt(password: str) -> str:
-    """Truncate a password to 72 bytes (bcrypt hard limit).
-
-    Handles multi-byte UTF-8 characters safely by encoding first,
-    slicing at the byte boundary, then decoding back.
-    """
-    return password.encode("utf-8")[:_BCRYPT_MAX_BYTES].decode("utf-8", errors="ignore")
-
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plaintext password against a stored hash.
@@ -41,7 +29,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     # Bcrypt hashes always start with $2a$ or $2b$
     if hashed_password.startswith(("$2a$", "$2b$")):
-        return _crypt_context.verify(_truncate_for_bcrypt(plain_password), hashed_password)
+        return _crypt_context.verify(plain_password, hashed_password)
 
     # Fallback: legacy MD5 raw hex comparison (seed users 4-5)
     md5_hex = hashlib.md5(plain_password.encode()).hexdigest()
@@ -60,4 +48,4 @@ def hash_password(plain_password: str) -> str:
     Returns:
         Bcrypt hash string (e.g., ``$2b$12$...``).
     """
-    return _crypt_context.hash(_truncate_for_bcrypt(plain_password))
+    return _crypt_context.hash(plain_password)
