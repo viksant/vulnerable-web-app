@@ -1,0 +1,21 @@
+# VULN: Missing Security Headers - No X-Frame-Options, X-Content-Type-Options, CSP
+# Caddy does NOT add these headers by default, preserving the vulnerability
+
+damnvulnerableapp.xyz {
+	# Eliminar HSTS que Caddy anade por defecto (preservar vuln Missing Security Headers)
+	header -Strict-Transport-Security
+
+	handle /api/* {
+		reverse_proxy backend:8000
+	}
+
+	handle /static/* {
+		reverse_proxy backend:8000
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

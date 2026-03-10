@@ -40,7 +40,7 @@ export default function ProductDetail() {
   async function fetchReviews() {
     try {
       const response = await apiClient.get(`/products/${id}/reviews`);
-      setReviews(response.data || []);
+      setReviews(response.data?.reviews || []);
     } catch {
       setReviews([]);
     }

@@ -60,27 +60,29 @@ services:
 
   frontend:
     build: ./frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      backend:
-        condition: service_started
+    volumes:
+      - frontend_dist:/srv
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
+      test: ["CMD", "test", "-f", "/srv/index.html"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
     networks:
       - default
 
-  nginx:
-    build: ./nginx
+  caddy:
+    image: caddy:2-alpine
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - frontend_dist:/srv:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       frontend:
-        condition: service_started
+        condition: service_healthy
       backend:
         condition: service_started
     networks:
@@ -106,3 +108,6 @@ networks:
 volumes:
   pgdata:
   uploads:
+  frontend_dist:
+  caddy_data:
+  caddy_config:
