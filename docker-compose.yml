@@ -43,6 +43,7 @@ services:
     volumes:
       - ./backend/app:/app/app
       - uploads:/app/uploads
+      - ./db/init.sql:/app/init.sql:ro
     depends_on:
       postgres:
         condition: service_healthy

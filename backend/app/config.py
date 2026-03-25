@@ -39,6 +39,7 @@ class Settings(BaseSettings):
 
     DEBUG: bool = False
     DIFFICULTY: Literal["easy", "medium", "hard"] = "easy"
+    RESET_API_KEY: str = ""
 
     @property
     def DATABASE_URL(self) -> str:

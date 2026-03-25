@@ -18,6 +18,7 @@ import SellerDashboard from "./pages/SellerDashboard";
 import SupportPanel from "./pages/SupportPanel";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
+import ResetApp from "./pages/ResetApp";
 
 /**
  * Root application component with routing and layout.
@@ -126,6 +127,9 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Reset */}
+          <Route path="/reset" element={<ResetApp />} />
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />

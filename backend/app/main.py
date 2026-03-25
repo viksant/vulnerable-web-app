@@ -32,6 +32,7 @@ from app.routes.profile import router as profile_router
 from app.routes.reviews import router as reviews_router
 from app.routes.seller import router as seller_router
 from app.routes.tickets import router as tickets_router
+from app.routes.reset import router as reset_router
 from app.routes.uploads import router as uploads_router
 
 UPLOADS_DIR = Path("/app/uploads")
@@ -97,6 +98,7 @@ app.include_router(tickets_router, prefix="/api/tickets", tags=["Tickets"])
 app.include_router(export_router, prefix="/api/export", tags=["Export"])
 app.include_router(import_router, prefix="/api/import", tags=["Import"])
 app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])
+app.include_router(reset_router, prefix="/api", tags=["Reset"])
 app.include_router(profile_router, prefix="/api/profile", tags=["Profile"])
 
 # VULN: Session-Unbound CSRF Token - Public endpoint generates tokens not
