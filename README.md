@@ -24,6 +24,65 @@ docker compose up --build
 - **Swagger UI:** http://localhost:8000/api/docs
 - **GraphiQL:** http://localhost:8000/api/graphql
 
+---
+
+## Production deployment (VPS)
+
+The stack ships with a **Caddy** reverse proxy that terminates TLS and obtains
+Let's Encrypt certificates automatically. Two one-shot scripts deploy the whole
+stack to a remote VPS and run end-to-end sanity checks:
+
+| Script | Platform |
+|--------|----------|
+| `deploy.sh`  | macOS / Linux |
+| `deploy.ps1` | Windows (PowerShell) |
+
+Run from your local machine, both scripts:
+
+1. Check SSH connectivity to the VPS.
+2. Provision it: install Docker + Compose (via `get.docker.com`) and enable a
+   `ufw` firewall allowing only ports **22/80/443**.
+3. Upload the code (tar over ssh — no rsync required).
+4. Build and start the stack with `docker compose up -d --build`.
+5. Run sanity checks: container health, backend `/health`, external HTTPS 200,
+   Let's Encrypt certificate, `/api/products` (backend + DB), HTTP→HTTPS
+   redirect, and that the infra ports (5432/6379/8000) are closed to the internet.
+
+The scripts are **idempotent** — re-running them re-deploys without wiping data
+or re-issuing the certificate (persisted in the `caddy_data` volume, avoiding
+ACME rate limits).
+
+### Usage
+
+```bash
+# macOS / Linux — defaults target the reference VPS and domain
+./deploy.sh
+
+# Override host / domain / user / remote dir via env vars
+VPS_HOST=1.2.3.4 VPS_USER=root DOMAIN=mydomain.xyz REMOTE_DIR=/opt/vulnshop ./deploy.sh
+```
+
+```powershell
+# Windows (PowerShell)
+./deploy.ps1
+./deploy.ps1 -VpsHost 1.2.3.4 -Domain mydomain.xyz
+```
+
+### Prerequisites
+
+- An `A` record for your domain pointing at the VPS public IP **before** the
+  first run, so Caddy can complete the ACME challenge.
+- SSH key access to the VPS (the scripts run non-interactively).
+
+### Security note — infra ports on a public VPS
+
+`docker-compose.yml` publishes `postgres:5432`, `redis:6379` and `backend:8000`,
+but those mappings are bound to `127.0.0.1`, so they are **not** reachable from
+the internet (a passwordless Redis exposed publicly would be compromised within
+minutes). The "exposed to host" lab vulnerabilities are preserved: those services
+stay reachable from the host itself and across the internal Docker network. Only
+Caddy (80/443) is published publicly.
+
 ## Seed users
 
 | Email | Password | Role | Hash |
