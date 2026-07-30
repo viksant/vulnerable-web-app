@@ -14,6 +14,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -275,8 +276,23 @@ async def read_log_file(
             detail=f"Log file not found: {file}",
         )
 
+    # HARDENING de disponibilidad (NO elimina la vuln CWE-22 de lectura de ficheros
+    # regulares arbitrarios): rechazamos todo lo que no sea un fichero regular. Un
+    # scanner pidiendo ?file=/proc/self/fd/1 (stdout = pipe) o /dev/* provoca un
+    # read() bloqueante que congela el event loop del unico worker uvicorn y tumba
+    # TODA la API (incidente 2026-07-29, ~17h caido). is_file() usa stat: no abre el
+    # descriptor ni bloquea. La lectura de ficheros regulares (objetivo del reto) sigue.
+    if not file_path.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not a regular file",
+        )
+
     try:
-        content = file_path.read_text(encoding="utf-8", errors="replace")
+        # Offload a threadpool: leer un fichero grande no debe bloquear el loop async.
+        content = await run_in_threadpool(
+            file_path.read_text, encoding="utf-8", errors="replace"
+        )
     except (OSError, PermissionError) as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
